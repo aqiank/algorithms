@@ -15,20 +15,36 @@ func newBinaryNode(value int) *binaryNode {
 	}
 }
 
-func (b *binaryNode) add(value int) {
-	if b.value < value {
+func (b *binaryNode) add(value int) *binaryNode {
+	newRoot := b
+	if value > b.value {
 		if b.right != nil {
-			b.right.add(value)
+			b.right = b.addToSubTree(b.right, value)
+			if b.heightDifference() == 2 {
+				if value > b.left.value {
+					newRoot = b.rotateRight()
+				} else {
+					newRoot = b.rotateLeftRight()
+				}
+			}
 		} else {
 			b.right = newBinaryNode(value)
 		}
 	} else {
 		if b.left != nil {
-			b.left.add(value)
+			b.left = b.addToSubTree(b.left, value)
 		} else {
 			b.left = newBinaryNode(value)
 		}
 	}
+	return newRoot
+}
+
+func (b *binaryNode) addToSubTree(parent *binaryNode, value int) *binaryNode {
+	if parent == nil {
+		return newBinaryNode(value)
+	}
+	return parent.add(value)
 }
 
 func (b *binaryNode) contains(value int) bool {
@@ -66,4 +82,34 @@ func (b *binaryNode) heightDifference() int {
 		rightTarget = 1 + b.right.height
 	}
 	return leftTarget - rightTarget
+}
+
+func (b *binaryNode) rotateRight() *binaryNode {
+	newRoot := b.left
+	if newRoot.right != nil {
+		b.left = newRoot.right
+	}
+	newRoot.right = b
+	return newRoot
+}
+
+func (b *binaryNode) rotateLeft() *binaryNode {
+	newRoot := b.right
+	if newRoot.left != nil {
+		b.right = newRoot.left
+	}
+	newRoot.left = b
+	return newRoot
+}
+
+func (b *binaryNode) rotateLeftRight() *binaryNode {
+	newRoot := b.left.rotateLeft()
+	newRoot = b.rotateRight()
+	return newRoot
+}
+
+func (b *binaryNode) rotateRightLeft() *binaryNode {
+	newRoot := b.right.rotateRight()
+	newRoot = b.rotateLeft()
+	return newRoot
 }
